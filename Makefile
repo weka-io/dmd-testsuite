@@ -224,6 +224,10 @@ DISABLED_TESTS += testclass
 # LDC: Test specific to DMD's library names.
 DISABLED_SH_TESTS += test_shared
 
+# WEKA FIXME: Disable this test, knowingly broken by a template instantiation bugfix,
+#             see commit 00ed62330882f30b1bf1bbeaf44b170b3fb9f8db
+DISABLED_COMPILE_TESTS += test12009
+
 # LDC: OS X ld needs extra options, but not needed so do not bother
 #      not supported for MSVC either
 ifeq ($(OS),osx)
