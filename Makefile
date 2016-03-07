@@ -122,20 +122,6 @@ export D_OBJC=1
 endif
 endif
 
-ifeq ($(OS),freebsd)
-DISABLED_TESTS += dhry
-# runnable/dhry.d(488): Error: undefined identifier dtime
-endif
-
-ifeq ($(OS),solaris)
-DISABLED_TESTS += dhry
-# runnable/dhry.d(488): Error: undefined identifier dtime
-endif
-
-ifeq ($(OS),win32)
-DISABLED_FAIL_TESTS += fail13939
-endif
-
 ####
 
 # LDC_FIXME: GDB tests currently not passing on Travis. Some other combinations
@@ -149,6 +135,14 @@ DISABLED_TESTS += gdb14225
 DISABLED_TESTS += gdb14276
 DISABLED_TESTS += gdb14313
 DISABLED_TESTS += gdb14330
+
+# LDC_FIXME: We don't currently support the ObjC interface.
+DISABLED_COMPILE_TESTS += objc_interface
+DISABLED_FAIL_TESTS += objc_interface1
+DISABLED_FAIL_TESTS += objc_interface2
+DISABLED_FAIL_TESTS += objc_interface3
+DISABLED_TESTS += objc_call
+DISABLED_TESTS += objc_objc_msgSend
 
 # LDC_FIXME: pragma(inline) is not currently implemented.
 DISABLED_FAIL_TESTS += pragmainline2
@@ -184,10 +178,14 @@ DISABLED_COMPILE_TESTS += ice11925
 # LDC_FIXME: This covers an optimization LLVM chooses not to do, see GitHub #679.
 DISABLED_COMPILE_TESTS += test11237
 
+# LDC_FIXME: We ICE here due to DMD issue 15650. Enable again after 15650 is fixed.
+DISABLED_COMPILE_TESTS += test10981
+
 # LDC: -transition/-vtls not supported yet.
 DISABLED_COMPILE_TESTS += sw_transition_complex
 DISABLED_COMPILE_TESTS += sw_transition_field
 DISABLED_COMPILE_TESTS += sw_transition_tls
+DISABLED_COMPILE_TESTS += diag3243
 
 # LDC: Our ASM diagnostics are different, might be worth revisiting at some point.
 DISABLED_FAIL_TESTS += diag6717
