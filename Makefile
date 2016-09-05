@@ -87,12 +87,14 @@ else
     SHELL=/bin/bash
 endif
 QUIET=@
+BASH_RESULTS_DIR=$(RESULTS_DIR)
 export RESULTS_DIR=test_results
 export MODEL
 export REQUIRED_ARGS=
 
 ifeq ($(findstring win,$(OS)),win)
 SHELL=bash.exe
+BASH_RESULTS_DIR=$(subst /,\\\\,$(RESULTS_DIR))
 export ARGS=-inline -release -g -O -unittest
 export DMD=../src/dmd.exe
 export EXE=.exe
@@ -176,9 +178,6 @@ DISABLED_TESTS += iasm64
 
 # LDC_FIXME: Name object files the same as DMD for LDMD compatibility (->Github #171)
 DISABLED_SH_TESTS += test44
-
-# LDC_FIXME: We currently don't support gotos into try blocks, see GitHub #676.
-DISABLED_COMPILE_TESTS += ice11925
 
 # LDC_FIXME: This covers an optimization LLVM chooses not to do, see GitHub #679.
 DISABLED_COMPILE_TESTS += test11237
@@ -315,7 +314,7 @@ $(RESULTS_DIR)/runnable/%.d.out: runnable/%.d $(RESULTS_DIR)/.created $(RESULTS_
 
 $(RESULTS_DIR)/runnable/%.sh.out: runnable/%.sh $(RESULTS_DIR)/.created $(RESULTS_DIR)/d_do_test$(EXE) $(DMD)
 	$(QUIET) echo " ... $(<D)/$*.sh"
-	$(QUIET) ./$(<D)/$*.sh
+	$(QUIET) RESULTS_DIR=$(BASH_RESULTS_DIR) ./$(<D)/$*.sh
 
 $(addsuffix .d.out,$(addprefix $(RESULTS_DIR)/compilable/,$(DISABLED_COMPILE_TESTS))): $(RESULTS_DIR)/.created
 	$(QUIET) echo " ... $@ - disabled"
@@ -325,7 +324,7 @@ $(RESULTS_DIR)/compilable/%.d.out: compilable/%.d $(RESULTS_DIR)/.created $(RESU
 
 $(RESULTS_DIR)/compilable/%.sh.out: compilable/%.sh $(RESULTS_DIR)/.created $(RESULTS_DIR)/d_do_test$(EXE) $(DMD)
 	$(QUIET) echo " ... $(<D)/$*.sh"
-	$(QUIET) ./$(<D)/$*.sh
+	$(QUIET) RESULTS_DIR=$(BASH_RESULTS_DIR) ./$(<D)/$*.sh
 
 $(addsuffix .d.out,$(addprefix $(RESULTS_DIR)/fail_compilation/,$(DISABLED_FAIL_TESTS))): $(RESULTS_DIR)/.created
 	$(QUIET) echo " ... $@ - disabled"
@@ -357,19 +356,19 @@ run_runnable_tests: $(runnable_test_results)
 
 start_runnable_tests: $(RESULTS_DIR)/.created $(RESULTS_DIR)/d_do_test$(EXE)
 	@echo "Running runnable tests"
-	$(QUIET)$(MAKE) --no-print-directory run_runnable_tests
+	$(QUIET)$(MAKE) $(DMD_TESTSUITE_MAKE_ARGS) --no-print-directory run_runnable_tests
 
 run_compilable_tests: $(compilable_test_results)
 
 start_compilable_tests: $(RESULTS_DIR)/.created $(RESULTS_DIR)/d_do_test$(EXE)
 	@echo "Running compilable tests"
-	$(QUIET)$(MAKE) --no-print-directory run_compilable_tests
+	$(QUIET)$(MAKE) $(DMD_TESTSUITE_MAKE_ARGS) --no-print-directory run_compilable_tests
 
 run_fail_compilation_tests: $(fail_compilation_test_results)
 
 start_fail_compilation_tests: $(RESULTS_DIR)/.created $(RESULTS_DIR)/d_do_test$(EXE)
 	@echo "Running fail compilation tests"
-	$(QUIET)$(MAKE) --no-print-directory run_fail_compilation_tests
+	$(QUIET)$(MAKE) $(DMD_TESTSUITE_MAKE_ARGS) --no-print-directory run_fail_compilation_tests
 
 $(RESULTS_DIR)/d_do_test$(EXE): d_do_test.d $(RESULTS_DIR)/.created
 	@echo "Building d_do_test tool"
