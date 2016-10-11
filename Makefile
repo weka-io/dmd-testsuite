@@ -58,6 +58,10 @@
 #   DISABLED:            text describing why the test is disabled (if empty, the test is
 #                        considered to be enabled).
 #                        default: (none, enabled)
+#
+#   GDB_FLAGS:           flags to enable gdb tests:
+#                        OFF - disables gdb tests
+#                        NOTLS - disables tests that fail for gdb < 7.6.1 that fixed TLS issues
 
 ifeq (Windows_NT,$(OS))
     ifeq ($(findstring WOW64, $(shell uname)),WOW64)
@@ -133,18 +137,23 @@ export D_OBJC=1
 endif
 endif
 
-# LDC_FIXME: GDB tests currently not passing on Travis. Some other combinations
-# of LLVM and GDB versions might fare slightly better, but focussed attention
-# will be needed to improve the debugging experience and resolve all of these.
+ifeq ($(findstring OFF,$(GDB_FLAGS)),OFF)
 DISABLED_TESTS += gdb1
 DISABLED_TESTS += gdb4149
 DISABLED_TESTS += gdb4181
-DISABLED_TESTS += gdb10311
 DISABLED_TESTS += gdb14225
 DISABLED_TESTS += gdb14276
 DISABLED_TESTS += gdb14313
 DISABLED_TESTS += gdb14330
 DISABLED_SH_TESTS += gdb15729
+else
+ifeq ($(findstring NOTLS,$(GDB_FLAGS)),NOTLS)
+# LDC: travis has only gdb 7.4, but TLS was fixed in 7.6.1
+DISABLED_TESTS += gdb4181
+endif
+endif
+# LDC: even without optimizations "x optimized-out"
+DISABLED_TESTS += gdb10311
 
 # LDC_FIXME: pragma(inline) is not currently implemented.
 DISABLED_FAIL_TESTS += pragmainline2
@@ -175,9 +184,6 @@ DISABLED_FAIL_TESTS += fail9414b
 # LDC_FIXME: Don't disable whole asm tests, only DMD-specific parts.
 DISABLED_TESTS += iasm
 DISABLED_TESTS += iasm64
-
-# LDC_FIXME: Name object files the same as DMD for LDMD compatibility (->Github #171)
-DISABLED_SH_TESTS += test44
 
 # LDC_FIXME: This covers an optimization LLVM chooses not to do, see GitHub #679.
 DISABLED_COMPILE_TESTS += test11237
